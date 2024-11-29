@@ -1,0 +1,25 @@
+store-management-frontend-app/.DS_Store
+store-management-frontend-app/node_modules
+store-management-frontend-app/dist
+
+
+# local env files
+store-management-frontend-app/.env.local
+store-management-frontend-app/.env.*.local
+
+# Log files
+store-management-frontend-app/npm-debug.log*
+store-management-frontend-app/yarn-debug.log*
+store-management-frontend-app/yarn-error.log*
+store-management-frontend-app/pnpm-debug.log*
+
+# Editor directories and files
+store-management-frontend-app/.idea
+store-management-frontend-app/.vscode
+store-management-frontend-app/*.suo
+store-management-frontend-app/*.ntvs*
+store-management-frontend-app/*.njsproj
+store-management-frontend-app/*.sln
+store-management-frontend-app/*.sw?
+store-management-frontend-app/*.env
+
