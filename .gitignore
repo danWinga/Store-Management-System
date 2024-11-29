@@ -1,3 +1,17 @@
+
+#Python backend
+Backend/.venv
+Backend/.vscode
+Backend/__pycache__
+Backend/venv
+Backend/.flaskenv
+Backend/.venv
+Backend/.vscode
+Backend/__pycache__
+Backend/*.pyc
+Backend/.DS_Store
+
+
 store-management-frontend-app/.DS_Store
 store-management-frontend-app/node_modules
 store-management-frontend-app/dist
@@ -22,4 +36,3 @@ store-management-frontend-app/*.njsproj
 store-management-frontend-app/*.sln
 store-management-frontend-app/*.sw?
 store-management-frontend-app/*.env
-
