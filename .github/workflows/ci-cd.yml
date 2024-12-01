@@ -19,7 +19,7 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}
           project_id: store-management-2024
 
       # Step 3: Ensure ./src Directory Exists
@@ -41,12 +41,14 @@ jobs:
           tar -czf build/app.tar.gz ./src
           echo "Application build completed."
 
-      # Step 5: Generate Signed URL for Artifact Upload using gsutil
+      # Step 5: Generate Signed URL for Artifact Upload
       - name: Generate Signed URL for Artifact Upload
         id: generate_signed_url
         run: |
           echo "Generating signed URL for artifact upload..."
-          gsutil signurl -d 1h ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} gs://store-management-bucket-12345/src/app.tar.gz > signed_url.txt
+          # Use the path to the service account key file
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}" > /tmp/gcloud-key.json
+          gsutil signurl -d 1h /tmp/gcloud-key.json gs://store-management-bucket-12345/src/app.tar.gz > signed_url.txt
           export SIGNED_URL=$(cat signed_url.txt)
           echo "Signed URL generated."
 
