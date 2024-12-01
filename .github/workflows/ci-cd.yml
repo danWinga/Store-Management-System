@@ -34,28 +34,28 @@ jobs:
             echo "Directory ./src exists."
           fi
 
-      # Step 4: Build the Application with Logging
+      # Step 4: Build the Application
       - name: Build the Application
         run: |
-          echo "Starting build process..."
+          echo "Building the application..."
           mkdir build
-          echo "Packaging src into a tarball..."
           tar -czf build/app.tar.gz ./src
-          echo "Build completed successfully. Artifact created at build/app.tar.gz."
+          echo "Application built successfully and archived to build/app.tar.gz."
 
-      # Step 5: Ensure gsutil is available and upload artifact to GCS with Logging
-      - name: Ensure gsutil is available
+      # Step 5: Ensure GCS Path is Accessible
+      - name: Ensure GCS Path is Accessible
         run: |
-          echo "Checking if gsutil is available..."
-          which gsutil || { echo "gsutil not found"; exit 1; }
-          echo "gsutil is available."
+          echo "Checking access to gs://store-management-bucket-12345/src/..."
+          gsutil ls gs://store-management-bucket-12345/src/ || { echo "GCS path not accessible or does not exist."; exit 1; }
+          echo "GCS path is accessible."
 
+      # Step 6: Upload Artifact to Google Cloud Storage (GCS) with Logging
       - name: Upload Artifact to Google Cloud Storage (GCS) with Logging
         run: |
           echo "Uploading artifact to Google Cloud Storage..."
           gsutil cp build/app.tar.gz gs://store-management-bucket-12345/src/
           echo "Artifact uploaded successfully to gs://store-management-bucket-12345/src/."
-          
-      # Step 6: Complete Job
+
+      # Step 7: Complete Job
       - name: Complete Job
         run: echo "CI/CD pipeline completed successfully!"
