@@ -42,18 +42,27 @@ jobs:
               --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
               --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} \
               --destination ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }} \
-              --source ./store-management-frontend-app/ # Ensure the build output folder is 'dist/'
+              --source ./store-management-frontend-app/dist/  # Ensure the build output folder is 'dist/'
           else
             echo "Dist directory does not exist. Check the build step." && exit 1
           fi
 
-      # Step 6: Set up GCP VM for build process
-      - name: Set up GCP VM
+      # Step 6: Download artifacts from Azure Blob Storage to GCP VM
+      - name: Download artifacts from Azure Blob Storage to GCP
         run: |
-          # Install Google Cloud SDK
-          curl -sSL https://sdk.cloud.google.com | bash
-          source ~/.bashrc
+          # Log in to Azure using Service Principal (if needed again)
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
 
+          # Download the artifact from Azure Blob Storage
+          az storage blob download-batch \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
+            --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} \
+            --destination ./store-management-frontend-app/dist/ \
+            --source ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}  # Adjust container if necessary
+
+      # Step 7: Deploy the application on GCP VM using Docker Compose
+      - name: Set up GCP VM and deploy using Docker Compose
+        run: |
           # Authenticate with Google Cloud
           echo ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} > /tmp/gcp-key.json
           gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
@@ -61,17 +70,18 @@ jobs:
           # Set GCP project
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-          # SSH into GCP VM and trigger build process
+          # SSH into GCP VM and deploy the application
           gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone ${{ secrets.GCP_ZONE }} --command "
             cd /opt/store-management-app &&
-            npm install &&
-            npm run build
+            git pull origin main &&  # Ensure the latest version is pulled
+            docker-compose down &&  # Stop any existing containers
+            docker-compose up -d   # Start containers using Docker Compose
           "
 
-      # Step 7: Complete the Job
+      # Step 8: Complete the Job
       - name: Complete Job
         run: echo "CI/CD pipeline completed successfully!"
 
-      # Step 8: Clean up Azure session
+      # Step 9: Clean up Azure session
       - name: Clean up Azure session
         run: az logout
