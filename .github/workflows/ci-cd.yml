@@ -32,15 +32,20 @@ jobs:
       - name: Log in to Azure
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}  # Azure credentials from a service principal
 
       # Step 5: Upload build artifacts to Azure Blob Storage
       - name: Upload artifacts to Azure Blob Storage
         run: |
-          az storage blob upload-batch \
-            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
-            --destination ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }} \
-            --source ./store-management-frontend-app/
+          if [ -d "./store-management-frontend-app/dist/" ]; then
+            az storage blob upload-batch \
+              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
+              --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} \
+              --destination ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }} \
+              --source ./store-management-frontend-app/ # Ensure the build output folder is 'dist/'
+          else
+            echo "Dist directory does not exist. Check the build step." && exit 1
+          fi
 
       # Step 6: Set up GCP VM for build process
       - name: Set up GCP VM
