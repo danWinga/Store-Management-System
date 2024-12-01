@@ -37,29 +37,28 @@ jobs:
       # Step 4: Build the Application
       - name: Build the Application
         run: |
-          echo "Building the application..."
           mkdir build
           tar -czf build/app.tar.gz ./src
-          echo "Application built successfully and archived to build/app.tar.gz."
+          echo "Application build completed."
 
-      # Step 5: Ensure GCS Path is Accessible
-      - name: Ensure GCS Path is Accessible
+      # Step 5: Generate a Signed URL for Artifact Upload
+      - name: Generate Signed URL for Artifact Upload
+        id: generate_signed_url
         run: |
-          echo "Checking access to gs://store-management-bucket-12345/src/..."
-          if ! gsutil ls gs://store-management-bucket-12345/src/; then
-            echo "Error: Unable to access GCS bucket or insufficient permissions."
-            echo "Ensure the service account has 'storage.objects.get' permission."
-            exit 1
-          fi
-          echo "GCS path is accessible."
-
-
-      # Step 6: Upload Artifact to Google Cloud Storage (GCS) with Logging
-      - name: Upload Artifact to Google Cloud Storage (GCS) with Logging
+          EXPIRATION_TIME=3600 # 1 hour
+          URL=$(gcloud storage buckets signed-urls create gs://store-management-bucket-12345/src/app.tar.gz \
+            --method=PUT \
+            --duration=$EXPIRATION_TIME \
+            --content-type=application/x-tar \
+            --output=json)
+          echo "::set-output name=signed_url::$(echo $URL | jq -r '.signedUrl')"
+        
+      # Step 6: Upload Artifact to GCS using Signed URL
+      - name: Upload Artifact to Google Cloud Storage (GCS) using Signed URL
         run: |
           echo "Uploading artifact to Google Cloud Storage..."
-          gsutil cp build/app.tar.gz gs://store-management-bucket-12345/src/
-          echo "Artifact uploaded successfully to gs://store-management-bucket-12345/src/."
+          curl -X PUT -T build/app.tar.gz "$SIGNED_URL"
+          echo "Artifact uploaded successfully."
 
       # Step 7: Complete Job
       - name: Complete Job
