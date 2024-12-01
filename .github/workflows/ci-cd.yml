@@ -53,8 +53,8 @@ jobs:
       - name: Set up GCP VM and deploy using Docker Compose
         run: |
           # Authenticate with Google Cloud
-          echo ${{ secrets.GCP_KEY }} > /tmp/gcp-key.json
-          gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
+          #echo ${{ secrets.GCP_KEY }} > /tmp/gcp-key.json
+          #gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
 
           # Set GCP project
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
