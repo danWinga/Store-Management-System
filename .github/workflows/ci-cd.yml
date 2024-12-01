@@ -41,24 +41,29 @@ jobs:
           tar -czf build/app.tar.gz ./src
           echo "Application build completed."
 
-      # Step 5: Generate Signed URL for Artifact Upload
+      # Step 5: Authenticate with Google Cloud using the Service Account Key
+      - name: Authenticate with Google Cloud
+        run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}" > /tmp/gcloud-key.json
+          gcloud auth activate-service-account --key-file=/tmp/gcloud-key.json
+          gcloud config set project store-management-2024
+          echo "Authentication completed."
+
+      # Step 6: Generate Signed URL for Artifact Upload
       - name: Generate Signed URL for Artifact Upload
-        id: generate_signed_url
         run: |
           echo "Generating signed URL for artifact upload..."
-          # Use the path to the service account key file
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}" > /tmp/gcloud-key.json
           gsutil signurl -d 1h /tmp/gcloud-key.json gs://store-management-bucket-12345/src/app.tar.gz > signed_url.txt
           export SIGNED_URL=$(cat signed_url.txt)
           echo "Signed URL generated."
 
-      # Step 6: Upload Artifact to GCS using Signed URL
+      # Step 7: Upload Artifact to GCS using Signed URL
       - name: Upload Artifact to Google Cloud Storage (GCS) using Signed URL
         run: |
           echo "Uploading artifact to Google Cloud Storage..."
           curl -X PUT -T build/app.tar.gz "$SIGNED_URL"
           echo "Artifact uploaded successfully."
 
-      # Step 7: Complete Job
+      # Step 8: Complete Job
       - name: Complete Job
         run: echo "CI/CD pipeline completed successfully!"
