@@ -41,18 +41,15 @@ jobs:
           tar -czf build/app.tar.gz ./src
           echo "Application build completed."
 
-      # Step 5: Generate a Signed URL for Artifact Upload
+      # Step 5: Generate Signed URL for Artifact Upload using gsutil
       - name: Generate Signed URL for Artifact Upload
         id: generate_signed_url
         run: |
-          EXPIRATION_TIME=3600 # 1 hour
-          URL=$(gcloud storage buckets signed-urls create gs://store-management-bucket-12345/src/app.tar.gz \
-            --method=PUT \
-            --duration=$EXPIRATION_TIME \
-            --content-type=application/x-tar \
-            --output=json)
-          echo "::set-output name=signed_url::$(echo $URL | jq -r '.signedUrl')"
-        
+          echo "Generating signed URL for artifact upload..."
+          gsutil signurl -d 1h ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} gs://store-management-bucket-12345/src/app.tar.gz > signed_url.txt
+          export SIGNED_URL=$(cat signed_url.txt)
+          echo "Signed URL generated."
+
       # Step 6: Upload Artifact to GCS using Signed URL
       - name: Upload Artifact to Google Cloud Storage (GCS) using Signed URL
         run: |
