@@ -3,35 +3,48 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Trigger on pushes to the `main` branch
+      - main
+  pull_request:
 
 jobs:
-  # Job 1: Build Job
   build:
     runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the repository code
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      # Step 1: Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    # Step 2: Set up Google Cloud SDK
-    - name: Set up Google Cloud SDK
-      uses: google-github-actions/setup-gcloud@v0
-      with:
-        project_id: ${{ secrets.GCP_PROJECT_ID }}   # GCP Project ID stored in GitHub Secrets
-        credentials_json: ${{ secrets.GCP_KEY }}   # Service account key stored in GitHub Secrets
+      # Step 2: Set up Google Cloud SDK
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          project_id: store-management-2024
 
-    - name: List Directory
-      run: ls -R
+      # Step 3: Ensure ./src Directory Exists
+      - name: Ensure ./src Exists
+        run: |
+          if [ ! -d "./src" ]; then
+            echo "Directory ./src does not exist. Creating it..."
+            mkdir -p ./src
+            # Optionally add placeholder files
+            echo "This is a placeholder file for ./src" > ./src/placeholder.txt
+          else
+            echo "Directory ./src exists."
+          fi
 
-    # Step 3: Build the artifact
-    - name: Build the Application
-      run: |
-        mkdir build
-        tar -czf build/app.tar.gz ./src  # Example: Compress the `src` folder into a tarball
+      # Step 4: Build the Application
+      - name: Build the Application
+        run: |
+          mkdir build
+          tar -czf build/app.tar.gz ./src
 
-    # Step 4: Upload artifact to GCS
-    - name: Upload Artifact to GCS
-      run: |
-        gsutil cp ./build/app.tar.gz gs://my-deployment-bucket/artifacts/releases/
+      # Step 5: Upload Artifact to GCS
+      - name: Upload Artifact to Google Cloud Storage (GCS)
+        run: |
+          gsutil cp build/app.tar.gz gs://your-bucket-name/path/to/store/
+
+      # Step 6: Complete Job
+      - name: Complete Job
+        run: echo "CI/CD pipeline completed successfully!"
