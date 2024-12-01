@@ -41,13 +41,19 @@ jobs:
           tar -czf build/app.tar.gz ./src
           echo "Application build completed."
 
-      # Step 5: Authenticate with Google Cloud using the Service Account Key  secrate
-      - name: Authenticate with Google Cloud
+      # Step 5: Authenticate with Google Cloud using the Service Account Key
+      - name: Debug the JSON content
         run: |
           echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}" > /tmp/gcloud-key.json
+          cat /tmp/gcloud-key.json  # Print the file content to verify it looks correct
+
+      # Proceed with authentication
+      - name: Authenticate with Google Cloud
+        run: |
           gcloud auth activate-service-account --key-file=/tmp/gcloud-key.json
           gcloud config set project store-management-2024
           echo "Authentication completed."
+
 
       # Step 6: Generate Signed URL for Artifact Upload
       - name: Generate Signed URL for Artifact Upload
