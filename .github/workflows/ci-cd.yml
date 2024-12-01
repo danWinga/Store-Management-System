@@ -41,7 +41,7 @@ jobs:
           tar -czf build/app.tar.gz ./src
           echo "Application build completed."
 
-      # Step 5: Authenticate with Google Cloud using the Service Account Key
+      # Step 5: Authenticate with Google Cloud using the Service Account Key  secrate
       - name: Authenticate with Google Cloud
         run: |
           echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}" > /tmp/gcloud-key.json
