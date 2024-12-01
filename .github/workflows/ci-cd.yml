@@ -40,7 +40,7 @@ jobs:
           az storage blob upload-batch \
             --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
             --destination ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }} \
-            --source ./store-management-frontend-app/build/
+            --source ./store-management-frontend-app/
 
       # Step 6: Set up GCP VM for build process
       - name: Set up GCP VM
