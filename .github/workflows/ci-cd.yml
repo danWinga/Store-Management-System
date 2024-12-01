@@ -46,8 +46,13 @@ jobs:
       - name: Ensure GCS Path is Accessible
         run: |
           echo "Checking access to gs://store-management-bucket-12345/src/..."
-          gsutil ls gs://store-management-bucket-12345/src/ || { echo "GCS path not accessible or does not exist."; exit 1; }
+          if ! gsutil ls gs://store-management-bucket-12345/src/; then
+            echo "Error: Unable to access GCS bucket or insufficient permissions."
+            echo "Ensure the service account has 'storage.objects.get' permission."
+            exit 1
+          fi
           echo "GCS path is accessible."
+
 
       # Step 6: Upload Artifact to Google Cloud Storage (GCS) with Logging
       - name: Upload Artifact to Google Cloud Storage (GCS) with Logging
