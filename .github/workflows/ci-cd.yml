@@ -60,7 +60,8 @@ jobs:
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
           # SSH into GCP VM and run deployment commands
-          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone ${{ secrets.GCP_ZONE }} --command "
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone ${{ secrets.GCP_ZONE }} --command
+          
             # Log installing git if not already installed
             
             # Log pulling files from git
@@ -85,7 +86,7 @@ jobs:
             # Navigate to the directory and run docker-compose to deploy
             cd /opt/store-management-app/Store-Management-System/
             sudo docker compose down && sudo docker compose up -d
-          "
+          
 
       # Step 8: Complete the Job
       - name: Complete Job
