@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Azure Blob Storage and GCP
+name: CI/CD Pipeline for GCP Deployment
 
 on:
   push:
@@ -28,40 +28,27 @@ jobs:
           npm install
           npm run build
 
-      # Step 4: Log in to Azure using Service Principal
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}  # Azure credentials from a service principal
+      # Step 4: Log in to Azure using Service Principal (Commented out as per request)
+      # - name: Log in to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}  # Azure credentials from a service principal
 
-      # Step 5: Upload build artifacts to Azure Blob Storage
-      - name: Upload artifacts to Azure Blob Storage
-        run: |
-          if [ -d "./store-management-frontend-app/dist/" ]; then
-            az storage blob upload-batch \
-              --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
-              --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} \
-              --destination ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }} \
-              --source ./store-management-frontend-app/dist/  # Ensure the build output folder is 'dist/'
-          else
-            echo "Dist directory does not exist. Check the build step." && exit 1
-          fi
+      # Step 5: (Commented out) Upload build artifacts to Azure Blob Storage
+      # - name: Upload artifacts to Azure Blob Storage
+      #   run: |
+      #     if [ -d "./store-management-frontend-app/dist/" ]; then
+      #       az storage blob upload-batch \
+      #         --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
+      #         --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} \
+      #         --destination ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }} \
+      #         --source ./store-management-frontend-app/dist/  # Ensure the build output folder is 'dist/'
+      #     else
+      #       echo "Dist directory does not exist. Check the build step." && exit 1
+      #     fi
 
-      # Step 6: Download artifacts from Azure Blob Storage to GCP VM
-      - name: Download artifacts from Azure Blob Storage to GCP
-        run: |
-          # Log in to Azure using Service Principal (if needed again)
-          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-
-          # Download the artifact from Azure Blob Storage
-          az storage blob download-batch \
-            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
-            --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} \
-            --destination ./store-management-frontend-app/dist/ \
-            --source ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}  # Adjust container if necessary
-
-      # Step 7: Deploy the application on GCP VM using Docker Compose
-      - name: Set up GCP VM and deploy using Docker Compose
+      # Step 6: SSH into GCP VM, pull the latest code, and deploy with Docker Compose
+      - name: Deploy the application on GCP VM using Docker Compose
         run: |
           # Authenticate with Google Cloud
           echo ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} > /tmp/gcp-key.json
@@ -74,14 +61,15 @@ jobs:
           gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone ${{ secrets.GCP_ZONE }} --command "
             cd /opt/store-management-app &&
             git pull origin main &&  # Ensure the latest version is pulled
+            cd Store-Management-System &&  # Navigate to the correct directory
             docker-compose down &&  # Stop any existing containers
             docker-compose up -d   # Start containers using Docker Compose
           "
 
-      # Step 8: Complete the Job
+      # Step 7: Complete the Job
       - name: Complete Job
         run: echo "CI/CD pipeline completed successfully!"
 
-      # Step 9: Clean up Azure session
-      - name: Clean up Azure session
-        run: az logout
+      # Step 8: Clean up Azure session (Commented out as per request)
+      # - name: Clean up Azure session
+      #   run: az logout
