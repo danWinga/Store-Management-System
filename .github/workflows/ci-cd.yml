@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for GCP Deployment
+name: CI/CD Pipeline for Azure Blob Storage and GCP
 
 on:
   push:
@@ -28,13 +28,13 @@ jobs:
           npm install
           npm run build
 
-      # Step 4: Log in to Azure using Service Principal (Commented out as per request)
-      # - name: Log in to Azure
-      #   uses: azure/login@v1
-      #   with:
-      #     creds: ${{ secrets.AZURE_CREDENTIALS }}  # Azure credentials from a service principal
+      # Step 4: Log in to Azure using Service Principal
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}  # Azure credentials from a service principal
 
-      # Step 5: (Commented out) Upload build artifacts to Azure Blob Storage
+      # Step 5: Upload artifacts to Azure Blob Storage (commented out as per request)
       # - name: Upload artifacts to Azure Blob Storage
       #   run: |
       #     if [ -d "./store-management-frontend-app/dist/" ]; then
@@ -47,8 +47,8 @@ jobs:
       #       echo "Dist directory does not exist. Check the build step." && exit 1
       #     fi
 
-      # Step 6: SSH into GCP VM, pull the latest code, and deploy with Docker Compose
-      - name: Deploy the application on GCP VM using Docker Compose
+      # Step 6: Deploy the application on GCP VM using Docker Compose
+      - name: Set up GCP VM and deploy using Docker Compose
         run: |
           # Authenticate with Google Cloud
           echo ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} > /tmp/gcp-key.json
@@ -59,9 +59,11 @@ jobs:
 
           # SSH into GCP VM and deploy the application
           gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone ${{ secrets.GCP_ZONE }} --command "
-            cd /opt/store-management-app &&
+            cd /opt/store-management-app && 
             git pull origin main &&  # Ensure the latest version is pulled
-            cd Store-Management-System &&  # Navigate to the correct directory
+            rm -rf ./Store-Management-System/* &&  # Remove existing files in the directory
+            git clone https://github.com/danWinga/Store-Management-System.git &&  # Pull the latest repo
+            cd Store-Management-System &&  # Navigate into the repo folder
             docker-compose down &&  # Stop any existing containers
             docker-compose up -d   # Start containers using Docker Compose
           "
@@ -70,6 +72,6 @@ jobs:
       - name: Complete Job
         run: echo "CI/CD pipeline completed successfully!"
 
-      # Step 8: Clean up Azure session (Commented out as per request)
-      # - name: Clean up Azure session
-      #   run: az logout
+      # Step 8: Clean up Azure session
+      - name: Clean up Azure session
+        run: az logout
