@@ -91,7 +91,7 @@ jobs:
 
             # Navigate to the directory and run docker-compose to deploy
             cd /opt/store-management-app/Store-Management-System/
-            sudo docker compose down && sudo docker compose up -d
+            
           "
 
       # Step 8: Complete the Job
