@@ -1,75 +1,81 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline for Azure Blob Storage
 
 on:
   push:
     branches:
-      - main
-  pull_request:
+      - main  # You can change this to your default branch
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest  # GitHub runner for initial steps
+    environment: production  # You can customize your environment name
 
     steps:
-      # Step 1: Checkout Code
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      # Step 2: Set up Google Cloud SDK
-      - name: Set up Google Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+      # Set up Node.js (example for a Node.js project)
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}
-          project_id: store-management-2024
+          node-version: '14'  # Specify the Node.js version you are using
 
-      # Step 3: Ensure ./src Directory Exists
-      - name: Ensure ./src Exists
+      # Install dependencies and build the project
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the project
+        run: npm run build
+
+      # Log in to Azure using Service Principal
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+
+      # Upload build artifacts to Azure Blob Storage
+      - name: Upload artifacts to Azure Blob Storage
         run: |
-          if [ ! -d "./src" ]; then
-            echo "Directory ./src does not exist. Creating it..."
-            mkdir -p ./src
-            # Optionally add placeholder files
-            echo "This is a placeholder file for ./src" > ./src/placeholder.txt
-          else
-            echo "Directory ./src exists."
-          fi
+          # Install Azure CLI if not already installed
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+          
+          # Log in to Azure CLI
+          az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
 
-      # Step 4: Build the Application
-      - name: Build the Application
+          # Upload the build output to the Azure Storage container
+          az storage blob upload-batch \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
+            --destination ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }} \
+            --source ./build/  # Path to your build artifacts folder
+
+      # Step 7: Set up GCP VM for build process
+      - name: Set up GCP VM
         run: |
-          mkdir build
-          tar -czf build/app.tar.gz ./src
-          echo "Application build completed."
+          # Install Google Cloud SDK if not already installed
+          curl -sSL https://sdk.cloud.google.com | bash
+          source ~/.bashrc
 
-      # Step 5: Authenticate with Google Cloud using the Service Account Key
-      - name: Debug the JSON content
-        run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_JSON }}" > /tmp/gcloud-key.json
-          cat /tmp/gcloud-key.json  # Print the file content to verify it looks correct
+          # Authenticate with the Google Cloud service account using key file
+          echo ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} > /tmp/gcp-key.json
+          gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
 
-      # Proceed with authentication
-      - name: Authenticate with Google Cloud
-        run: |
-          gcloud auth activate-service-account --key-file=/tmp/gcloud-key.json
-          gcloud config set project store-management-2024
-          echo "Authentication completed."
+          # Set GCP project (replace with your project ID)
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-
-      # Step 6: Generate Signed URL for Artifact Upload
-      - name: Generate Signed URL for Artifact Upload
-        run: |
-          echo "Generating signed URL for artifact upload..."
-          gsutil signurl -d 1h /tmp/gcloud-key.json gs://store-management-bucket-12345/src/app.tar.gz > signed_url.txt
-          export SIGNED_URL=$(cat signed_url.txt)
-          echo "Signed URL generated."
-
-      # Step 7: Upload Artifact to GCS using Signed URL
-      - name: Upload Artifact to Google Cloud Storage (GCS) using Signed URL
-        run: |
-          echo "Uploading artifact to Google Cloud Storage..."
-          curl -X PUT -T build/app.tar.gz "$SIGNED_URL"
-          echo "Artifact uploaded successfully."
+          # SSH into the GCP VM and trigger the build process (you can customize this step)
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone ${{ secrets.GCP_ZONE }} --command "
+            cd /opt/store-management-app &&
+            npm install &&
+            npm run build
+          "
 
       # Step 8: Complete Job
       - name: Complete Job
         run: echo "CI/CD pipeline completed successfully!"
+
+      # Optional: Clean up
+      - name: Clean up Azure session
+        run: az logout
