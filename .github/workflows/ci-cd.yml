@@ -22,6 +22,9 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}   # GCP Project ID stored in GitHub Secrets
         credentials_json: ${{ secrets.GCP_KEY }}   # Service account key stored in GitHub Secrets
 
+    - name: List Directory
+      run: ls -R
+
     # Step 3: Build the artifact
     - name: Build the Application
       run: |
