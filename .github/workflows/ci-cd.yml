@@ -43,7 +43,9 @@ jobs:
       # Step 5: Upload Artifact to GCS
       - name: Upload Artifact to Google Cloud Storage (GCS)
         run: |
-          gsutil cp build/app.tar.gz gs://your-bucket-name/path/to/store/
+          gsutil cp build/app.tar.gz gs://store-management-bucket-12345/src
+
+
 
       # Step 6: Complete Job
       - name: Complete Job
