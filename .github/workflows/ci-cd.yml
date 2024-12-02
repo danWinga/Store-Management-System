@@ -32,7 +32,7 @@ jobs:
 
       - name: SSH into GCP instance and clone repository
         run: |
-          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --command "cd /opt/test-git-clone && sudo git clone https://github.com/danWinga/Store-Management-System.git && cd Store-Management-System"
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone us-central1-a --command "cd /opt/test-git-clone && sudo git clone https://github.com/danWinga/Store-Management-System.git && cd Store-Management-System"
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
@@ -55,4 +55,4 @@ jobs:
 
       - name: Log completion activity
         run: |
-          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone us-central1-a --command "echo 'Clone completed ' >> /opt/test-git-clone/clone_log.txt"
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone us-central1-a --command "sudo echo 'Clone completed ' >> /opt/test-git-clone/clone_log.txt"
