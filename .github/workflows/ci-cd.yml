@@ -21,9 +21,9 @@ jobs:
   clone:
     runs-on: ubuntu-latest
     steps:
-      - name: Authenticate with GCP
+      - name: Decode and Authenticate with GCP
         run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > /tmp/gcp-key.json
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_BASE64 }}" | base64 --decode > /tmp/gcp-key.json
           gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
           gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
@@ -39,9 +39,9 @@ jobs:
   log:
     runs-on: ubuntu-latest
     steps:
-      - name: Authenticate with GCP
+      - name: Decode and Authenticate with GCP
         run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > /tmp/gcp-key.json
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_BASE64 }}" | base64 --decode > /tmp/gcp-key.json
           gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
           gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
