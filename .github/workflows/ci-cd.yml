@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Authenticate with GCP
         run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" | gcloud auth activate-service-account --key-file=-
+          echo "${{ secrets.GCP_KEY }}" | gcloud auth activate-service-account --key-file=-
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
           gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
 
@@ -32,7 +32,7 @@ jobs:
           gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --command "cd /opt/test-git-clone && sudo git clone https://github.com/danWinga/Store-Management-System.git && cd Store-Management-System"
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          GCP_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          GCP_CREDENTIALS: ${{ secrets.GCP_KEY }}
           GCP_INSTANCE_NAME: ${{ secrets.GCP_VM_NAME }}
 
   log:
@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: Authenticate with GCP
         run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" | gcloud auth activate-service-account --key-file=-
+          echo "${{ secrets.GCP_KEY }}" | gcloud auth activate-service-account --key-file=-
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
           gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
 
