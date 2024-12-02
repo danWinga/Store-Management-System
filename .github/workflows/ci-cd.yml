@@ -28,7 +28,7 @@ jobs:
           
           #!/bin/bash
           gcloud config set core/project ${{ secrets.GCP_PROJECT_ID }}
-          gcloud compute ssh linux-vm-store-management --zone us-central1-a
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }}  --zone us-central1-a
 
       - name: SSH into GCP instance and clone repository
         run: |
@@ -49,10 +49,11 @@ jobs:
           echo "Project ID: ${{ secrets.GCP_PROJECT_ID }}"
           #!/bin/bash
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}  
-          gcloud compute ssh ${{ secrets.GCP_PROJECT_ID }} --zone us-central1-a
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }}  --zone us-central1-a
         
           
 
       - name: Log completion activity
         run: |
-          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone us-central1-a --command "sudo echo 'Clone completed ' "
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone us-central1-a --command "
+          echo 'Clone completed '"
