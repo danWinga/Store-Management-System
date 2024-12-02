@@ -48,7 +48,7 @@ jobs:
           #!/bin/bash
           gcloud config set project store-management-system-443218
           
-          gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
+         
 
       - name: Log completion activity
         run: |
