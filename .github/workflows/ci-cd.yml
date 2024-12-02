@@ -21,6 +21,12 @@ jobs:
   clone:
     runs-on: ubuntu-latest
     steps:
+      - name: Authenticate with GCP
+        run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" | gcloud auth activate-service-account --key-file=-
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+          gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
+
       - name: SSH into GCP instance and clone repository
         run: |
           gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --command "cd /opt/test-git-clone && sudo git clone https://github.com/danWinga/Store-Management-System.git && cd Store-Management-System"
@@ -32,6 +38,12 @@ jobs:
   log:
     runs-on: ubuntu-latest
     steps:
+      - name: Authenticate with GCP
+        run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" | gcloud auth activate-service-account --key-file=-
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+          gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
+
       - name: Log completion activity
         run: |
           gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --command "echo 'Clone completed at $(date)' >> /opt/test-git-clone/clone_log.txt"
