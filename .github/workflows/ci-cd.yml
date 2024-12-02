@@ -55,5 +55,5 @@ jobs:
       - name: Log completion activity
         run: |
           gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone us-central1-a --command "
-            sudo  echo 'Clone completed ' >> /opt/test-git-clone/clone_log.txt
+            echo 'Clone completed ' 
           "
