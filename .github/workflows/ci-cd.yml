@@ -43,7 +43,7 @@ jobs:
         run: |
           echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_BASE64 }}" | base64 --decode > /tmp/gcp-key.json
           gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
-          echo "Project ID: ${{ secrets.GCP_PROJECT_ID }}"
+          echo "Project ID: store-management-system-443218"
           gcloud config set project store-management-system-443218
           
           gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
