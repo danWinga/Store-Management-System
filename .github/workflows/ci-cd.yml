@@ -1,79 +1,37 @@
-name: CI/CD Pipeline for Azure Blob Storage and GCP
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
-      - main  # Change this to your default branch if different
+      - main
 
 jobs:
-  build-and-deploy:
+  setup:
     runs-on: ubuntu-latest
-    environment: production  # Customize as needed
-
     steps:
-      # Step 1: Checkout the repository
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Setup GCP CLI
+        uses: google-github-actions/setup-gcloud@v2
         with:
-          node-version: '14'
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      # Step 3: Install dependencies and build the project
-      - name: Install dependencies and build the project
+  clone:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH into GCP instance and clone repository
         run: |
-          cd store-management-frontend-app
-          npm install
-          npm run build
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --command "cd /opt/test-git-clone && sudo git clone https://github.com/danWinga/Store-Management-System.git && cd Store-Management-System"
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          GCP_INSTANCE_NAME: ${{ secrets.GCP_VM_NAME }}
 
-      # Step 4: Log in to Azure using Service Principal
-      - name: Log in to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}  # Azure credentials from a service principal
-
-      # Step 5: Comment out Azure storage script
-      # - name: Upload artifacts to Azure Blob Storage
-      #   run: |
-      #     if [ -d "./store-management-frontend-app/dist/" ]; then
-      #       az storage blob upload-batch \
-      #         --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }} \
-      #         --account-key ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }} \
-      #         --destination ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }} \
-      #         --source ./store-management-frontend-app/dist/  # Ensure the build output folder is 'dist/'
-      #     else
-      #       echo "Dist directory does not exist. Check the build step." && exit 1
-      #     fi
-
-      # Step 6: Download artifacts from Azure Blob Storage to GCP VM (This step is now commented out)
-
-      # Step 7: Set up GCP VM and deploy using Docker Compose
-      - name: Set up GCP VM and deploy using Docker Compose
+  log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log completion activity
         run: |
-          # Authenticate with Google Cloud
-          echo ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }} > /tmp/gcp-key.json
-          gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
-
-          # Set GCP project
-          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
-
-
-          # SSH into GCP VM and trigger build process
-          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone ${{ secrets.GCP_ZONE }} --command "
-            cd /opt/store-management-app &&
-          git clone https://github.com/danWinga/Store-Management-System.git /opt/store-management-app/Store-Management-System
-            # Navigate to the directory and run docker-compose to deploy
-            cd /opt/store-management-app/Store-Management-System/
-            sudo docker compose down && sudo docker compose up -d 
-          "
-
-
-      # Step 8: Complete the Job
-      - name: Complete Job
-        run: echo "CI/CD pipeline completed successfully!"
-
-      # Step 9: Clean up Azure session
-      - name: Clean up Azure session
-        run: az logout
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --command "echo 'Clone completed at $(date)' >> /opt/test-git-clone/clone_log.txt"
