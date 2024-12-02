@@ -46,8 +46,10 @@ jobs:
           
           echo "Project ID: store-management-system-443218"
           #!/bin/bash
-          gcloud config set project store-management-system-443218          
-          gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
+          gcloud config set project store-management-system-443218  
+          gcloud compute ssh linux-vm-store-management --zone us-central1-a
+        
+          
 
       - name: Log completion activity
         run: |
