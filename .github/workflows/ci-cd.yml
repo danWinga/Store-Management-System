@@ -25,8 +25,10 @@ jobs:
         run: |
           echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_BASE64 }}" | base64 --decode > /tmp/gcp-key.json
           gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
+          
+          #!/bin/bash
           gcloud config set core/project ${{ secrets.GCP_PROJECT_ID }}
-          gcloud config set compute/zone ${{ secrets.GCP_COMPUTE_ZONE }}
+          gcloud compute ssh linux-vm-store-management --zone us-central1-a
 
       - name: SSH into GCP instance and clone repository
         run: |
@@ -53,4 +55,4 @@ jobs:
 
       - name: Log completion activity
         run: |
-          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --command "echo 'Clone completed at $(date)' >> /opt/test-git-clone/clone_log.txt"
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --command "echo 'Clone completed ' >> /opt/test-git-clone/clone_log.txt"
