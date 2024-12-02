@@ -25,14 +25,19 @@ jobs:
         run: |
           echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_BASE64 }}" | base64 --decode > /tmp/gcp-key.json
           gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
-          
-          #!/bin/bash
           gcloud config set core/project ${{ secrets.GCP_PROJECT_ID }}
-          gcloud compute ssh ${{ secrets.GCP_VM_NAME }}  --zone us-central1-a
-
-      - name: SSH into GCP instance and clone repository
+        
+      - name: SSH into GCP instance and handle repository
         run: |
-          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone us-central1-a --command "cd /opt/test-git-clone && sudo git clone https://github.com/danWinga/Store-Management-System.git && cd Store-Management-System"
+          gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone us-central1-a --command "
+            # Check if the directory exists
+            if [ -d /opt/test-git-clone/Store-Management-System ]; then
+              echo 'Repository already exists. Removing and cloning again...'
+              sudo rm -rf /opt/test-git-clone/Store-Management-System
+            fi
+            # Clone the repository
+            sudo git clone https://github.com/danWinga/Store-Management-System.git /opt/test-git-clone/Store-Management-System
+          "
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           GCP_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
@@ -45,15 +50,10 @@ jobs:
         run: |
           echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY_BASE64 }}" | base64 --decode > /tmp/gcp-key.json
           gcloud auth activate-service-account --key-file=/tmp/gcp-key.json
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
           
-          echo "Project ID: ${{ secrets.GCP_PROJECT_ID }}"
-          #!/bin/bash
-          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}  
-          gcloud compute ssh ${{ secrets.GCP_VM_NAME }}  --zone us-central1-a
-        
-          
-
       - name: Log completion activity
         run: |
           gcloud compute ssh ${{ secrets.GCP_VM_NAME }} --zone us-central1-a --command "
-          echo 'Clone completed '"
+            sudo -i && echo 'Clone completed ' >> /opt/test-git-clone/clone_log.txt
+          "
