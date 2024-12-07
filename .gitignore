@@ -40,3 +40,5 @@ store-management-frontend-app/*.env
 infrastructureAsCode-IaC/gcp-terraform-Task5-IaC/.*
 infrastructureAsCode-IaC/gcp-terraform-Task5-IaC/terraform.tfstate.backup
 infrastructureAsCode-IaC/gcp-terraform-Task5-IaC/terraform.*
+infrastructureAsCode-IaC/gcp-terraform-Task5-IaC/terraform.tfvars
+infrastructureAsCode-IaC/gcp-terraform-Task5-IaC/terraform.tfstate
