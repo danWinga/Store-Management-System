@@ -36,7 +36,11 @@ jobs:
               sudo rm -rf /opt/test-git-clone/Store-Management-System
             fi
             # Clone the repository
-            sudo git clone https://github.com/danWinga/Store-Management-System.git /opt/test-git-clone/Store-Management-System
+            sudo git clone https://github.com/danWinga/Store-Management-System.git /opt/test-git-clone/Store-Management-System &&
+            cd /opt/test-git-clone/Store-Management-System
+            echo 'Stop and remove running docker service , Then redeploy with updated artifacts...'
+            sudo  docker compose down && sudo  docker compose up -d 
+            echo 'The application is redeployed successful..'
           "
         env:
           GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
