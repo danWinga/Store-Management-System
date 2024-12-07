@@ -36,3 +36,7 @@ store-management-frontend-app/*.njsproj
 store-management-frontend-app/*.sln
 store-management-frontend-app/*.sw?
 store-management-frontend-app/*.env
+infrastructureAsCode-IaC/gcp-terraform-Task5-IaC/.gcp/store-management-system-443218-dc764f3e8ca3.json
+infrastructureAsCode-IaC/gcp-terraform-Task5-IaC/.terraform.lock.hcl
+infrastructureAsCode-IaC/gcp-terraform-Task5-IaC/.gcp/*
+infrastructureAsCode-IaC/gcp-terraform-Task5-IaC/.*
